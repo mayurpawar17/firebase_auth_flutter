@@ -1,5 +1,6 @@
 import 'package:firebase_auth_flutter/bloc/auth_bloc.dart';
 import 'package:firebase_auth_flutter/bloc/auth_state.dart';
+import 'package:firebase_auth_flutter/screens/home_screen.dart';
 import 'package:firebase_auth_flutter/screens/sign_up_screen.dart';
 import 'package:firebase_auth_flutter/util/app_colors.dart';
 import 'package:flutter/material.dart';
@@ -21,11 +22,17 @@ class LoginScreen extends StatelessWidget {
       body: SafeArea(
         child: BlocListener<AuthBloc, AuthState>(
           listener: (context, state) {
-            if (state is AuthError) {
-              ScaffoldMessenger.of(
-                context,
-              ).showSnackBar(SnackBar(content: Text(state.message)));
-            }
+              if (state is AuthAuthenticated) {
+            // ✅ Redirect to HomePage when login is successful
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (_) => HomeScreen()),
+            );
+          } else if (state is AuthError) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(state.message)),
+            );
+          }
           },
           child: Padding(
             padding: const EdgeInsets.all(20.0),
@@ -38,7 +45,24 @@ class LoginScreen extends StatelessWidget {
                   Center(
                     child: Column(
                       children: [
-                        SvgPicture.asset('assets/shn_logo.svg', width: 100),
+                        TweenAnimationBuilder(
+                          builder: (context, value, child) {
+                            return Transform.translate(
+                              offset: Offset(0, value),
+                              child: Opacity(
+                                opacity: 1 - (value.abs() / 20),
+                                child: child,
+                              ),
+                            );
+                          },
+                          tween: Tween<double>(begin: -20, end: 0),
+                          duration: Duration(milliseconds: 600),
+                          curve: Curves.easeOut,
+                          child: SvgPicture.asset(
+                            'assets/shn_logo.svg',
+                            width: 100,
+                          ),
+                        ),
                         const SizedBox(height: 30),
                         const Text(
                           'Login to your Account',
@@ -136,40 +160,56 @@ class LoginScreen extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 20),
-                  Material(
-                    color: Colors.black, // Button background
-                    borderRadius: BorderRadius.circular(12),
-                    child: InkWell(
-                      borderRadius: BorderRadius.circular(12),
-                      // Ripple shape
-                      splashColor: Colors.white.withOpacity(0.3),
-                      // Ripple color
-                      onTap: () {
-                        context.read<AuthBloc>().add(
-                          SignInRequested(
-                            emailController.text,
-                            passwordController.text,
-                          ),
-                        );
-                      },
-                      child: Container(
-                        width: double.infinity,
-                        padding: EdgeInsets.symmetric(vertical: 17),
-                        decoration: BoxDecoration(
+
+                  BlocBuilder<AuthBloc, AuthState>(
+                    builder: (context, state) {
+                      return Material(
+                        color: Colors.black, // Button background
+                        borderRadius: BorderRadius.circular(12),
+                        child: InkWell(
                           borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Center(
-                          child: const Text(
-                            'Log in',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w700,
-                              fontFamily: 'Poppins',
+                          // Ripple shape
+                          splashColor: Colors.white.withOpacity(0.3),
+                          // Ripple color
+                          onTap: () {
+                            context.read<AuthBloc>().add(
+                              SignInRequested(
+                                emailController.text,
+                                passwordController.text,
+                              ),
+                            );
+                          },
+                          child: Container(
+                            // height: 50,
+                            width: double.infinity,
+                            padding: EdgeInsets.symmetric(vertical: 17),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Center(
+                              child:
+                                  state is AuthLoading
+                                      ? SizedBox(
+                                        height: 20.0,
+                                        width: 20.0,
+                                        child: CircularProgressIndicator(
+                                          color: Colors.white,
+                                          strokeWidth: 2,
+                                        ),
+                                      )
+                                      : const Text(
+                                        'Log in',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.w700,
+                                          fontFamily: 'Poppins',
+                                        ),
+                                      ),
                             ),
                           ),
                         ),
-                      ),
-                    ),
+                      );
+                    },
                   ),
                   SizedBox(height: 20),
 

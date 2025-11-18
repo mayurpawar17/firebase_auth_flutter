@@ -1,52 +1,135 @@
-import 'package:animations/animations.dart';
-import 'package:firebase_auth_flutter/bloc/auth_bloc.dart';
-import 'package:firebase_auth_flutter/bloc/auth_state.dart';
-import 'package:firebase_auth_flutter/repository/auth_repository.dart';
-import 'package:firebase_auth_flutter/screens/home_screen.dart';
-import 'package:firebase_auth_flutter/screens/login_screen.dart';
-import 'package:firebase_auth_flutter/screens/splash_screen.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:lottie/lottie.dart';
 
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
-  runApp(MyApp());
+import 'core/theme/app_colors.dart';
+
+void main() {
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  final AuthRepository authRepository = AuthRepository();
-
-  MyApp({super.key});
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => AuthBloc(authRepository),
-      child: MaterialApp(
-        debugShowCheckedModeBanner: false,
-        theme: ThemeData(
-          pageTransitionsTheme: PageTransitionsTheme(
-            builders: {
-              TargetPlatform.android: SharedAxisPageTransitionsBuilder(
-                transitionType: SharedAxisTransitionType.horizontal,
+    return MaterialApp(
+      home: const WelcomeScreen(),
+      debugShowCheckedModeBanner: false,
+    );
+  }
+}
+
+class WelcomeScreen extends StatelessWidget {
+  const WelcomeScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppColors.primaryBgColor,
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              Column(
+                children: [
+                  RichText(
+                    text: TextSpan(
+                      children: [
+                        TextSpan(
+                          text: 'Welcome to ',
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 30,
+                            fontWeight: FontWeight.bold,
+                            fontFamily: 'inter',
+                          ),
+                        ),
+                        TextSpan(
+                          text: 'Sway',
+                          style: TextStyle(
+                            color: Colors.indigo,
+                            fontSize: 35,
+                            fontWeight: FontWeight.bold,
+                            fontFamily: 'inter',
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const Text(
+                    "Influence what's next",
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 20,
+                      color: Colors.black,
+                    ),
+                  ),
+                ],
               ),
-            },
+              Lottie.asset('assets/Liking.json', height: 500, width: 500),
+
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      backgroundColor: Colors.indigo,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12.0),
+                      ),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 30.0,
+                        vertical: 15.0,
+                      ),
+                      textStyle: const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    onPressed: () {
+                      // Navigator.pushReplacement(
+                      //   context,
+                      //   MaterialPageRoute(builder: (_) => LoginScreen()),
+                      // );
+                    },
+                    child: const Text('Login'),
+                  ),
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      elevation: 0,
+                      foregroundColor: Colors.indigo,
+                      backgroundColor: AppColors.primaryBgColor,
+
+                      shape: RoundedRectangleBorder(
+                        side: BorderSide(color: Colors.indigo, width: 1.5),
+                        borderRadius: BorderRadius.circular(12.0),
+                      ),
+
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 30.0,
+                        vertical: 15.0,
+                      ),
+                      textStyle: const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    onPressed: () {
+                      // Navigator.pushReplacement(
+                      //   context,
+                      //   MaterialPageRoute(builder: (_) => RegisterScreen()),
+                      // );
+                    },
+                    child: const Text('Sign Up'),
+                  ),
+                ],
+              ),
+            ],
           ),
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        ),
-        home: BlocBuilder<AuthBloc, AuthState>(
-          builder: (context, state) {
-            if (state is AuthAuthenticated) {
-              return HomeScreen();
-            } else if (state is AuthUnauthenticated) {
-              return LoginScreen();
-            } else if (state is AuthLoading) {
-              return Scaffold(body: Center(child: CircularProgressIndicator()));
-            }
-            return SplashScreen();
-          },
         ),
       ),
     );
